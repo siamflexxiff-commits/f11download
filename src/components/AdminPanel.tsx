@@ -19,7 +19,6 @@ import {
 } from 'lucide-react';
 import { 
   signInWithEmailAndPassword, 
-  createUserWithEmailAndPassword, 
   signOut,
   onAuthStateChanged
 } from 'firebase/auth';
@@ -37,7 +36,6 @@ export default function AdminPanel({ currentConfig, onConfigChange, onExit }: Ad
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [isSignUp, setIsSignUp] = useState(false);
   const [authError, setAuthError] = useState('');
   const [authLoading, setAuthLoading] = useState(false);
   
@@ -91,15 +89,9 @@ export default function AdminPanel({ currentConfig, onConfigChange, onExit }: Ad
     }
 
     try {
-      if (isSignUp) {
-        addLog(`Initiating register sequence for ${email}...`);
-        const userCred = await createUserWithEmailAndPassword(auth, email, password);
-        addLog(`Registration complete. Admin session established for ${userCred.user.email}`);
-      } else {
-        addLog(`Initiating verification query for ${email}...`);
-        const userCred = await signInWithEmailAndPassword(auth, email, password);
-        addLog(`Access granted. Authenticated as ${userCred.user.email}`);
-      }
+      addLog(`Initiating verification query for ${email}...`);
+      const userCred = await signInWithEmailAndPassword(auth, email, password);
+      addLog(`Access granted. Authenticated as ${userCred.user.email}`);
     } catch (err: any) {
       console.error(err);
       let friendlyMessage = err.message;
@@ -237,9 +229,7 @@ export default function AdminPanel({ currentConfig, onConfigChange, onExit }: Ad
 
           <h2 className="text-2xl font-black tracking-tight mb-2">F11 Portal Authority</h2>
           <p className="text-slate-400 text-sm mb-8 leading-relaxed">
-            {isSignUp 
-              ? "Register a secure administrator profile using Firebase credentials."
-              : "Enter credentials to unlock dynamic page control templates and stats."}
+            Enter credentials to unlock dynamic page control templates and stats.
           </p>
 
           <form onSubmit={handleLogin} className="space-y-4">
@@ -288,8 +278,6 @@ export default function AdminPanel({ currentConfig, onConfigChange, onExit }: Ad
                   <RefreshCw size={14} className="animate-spin" />
                   Processing Control Portal...
                 </>
-              ) : isSignUp ? (
-                "Register Admin Credentials"
               ) : (
                 "Unlock Control Portal"
               )}
@@ -297,17 +285,6 @@ export default function AdminPanel({ currentConfig, onConfigChange, onExit }: Ad
           </form>
 
           <div className="mt-6 pt-6 border-t border-slate-800/60 flex flex-col gap-3 items-center text-[11px] text-slate-500">
-            <button
-              id="admin-signup-toggle-btn"
-              type="button"
-              onClick={() => {
-                setIsSignUp(!isSignUp);
-                setAuthError('');
-              }}
-              className="text-red-400 hover:text-red-350 transition-colors bg-transparent border-0 cursor-pointer underline font-semibold"
-            >
-              {isSignUp ? "Already registered? Sign In instead" : "Don't have an admin account yet? Register here"}
-            </button>
             <button 
               id="back-home-btn"
               onClick={onExit}
