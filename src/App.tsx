@@ -823,7 +823,7 @@ export default function App() {
             <a href={siteConfig.discordUrl} target="_blank" rel="noreferrer" className="hover:text-slate-900 transition-colors">Discord</a>
           </div>
           <div className="text-sm font-medium text-slate-400">
-            © 2026 Developed by <span className="text-red-500 font-bold">{siteConfig.developerName}</span>
+            © 2025 Developed by <span className="text-red-500 font-bold">{siteConfig.developerName}</span>
           </div>
         </div>
       </footer>
