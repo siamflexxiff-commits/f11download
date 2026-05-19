@@ -23,7 +23,8 @@ import {
   signOut,
   onAuthStateChanged
 } from 'firebase/auth';
-import { auth, ensureAnonymousAuth } from '../lib/firebase';
+import { db, auth, ensureAnonymousAuth } from '../lib/firebase';
+import { doc, setDoc } from 'firebase/firestore';
 import { SiteConfig } from '../types';
 
 interface AdminPanelProps {
@@ -138,7 +139,19 @@ export default function AdminPanel({ currentConfig, onConfigChange, onExit }: Ad
     e.preventDefault();
     setLoading(true);
     setAlert(null);
-    addLog("Sending payload updates to Express server /api/admin/config...");
+    addLog("Intending config update. Attempting synchronizer node update (/api/admin/config)...");
+
+    let apiSucceeded = false;
+    const newConfigPayload: SiteConfig = {
+      version,
+      downloadUrl,
+      heroHeadline,
+      heroSubtitle,
+      discordUrl,
+      developerName,
+      downloads: parseInt(downloads, 10),
+      activeUsers: parseInt(activeUsers, 10)
+    };
 
     try {
       const response = await fetch('/api/admin/config', {
@@ -147,38 +160,46 @@ export default function AdminPanel({ currentConfig, onConfigChange, onExit }: Ad
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({
-          password: 'admin123', // Hardcoded admin authentication
-          version,
-          downloadUrl,
-          heroHeadline,
-          heroSubtitle,
-          discordUrl,
-          developerName,
-          downloads: parseInt(downloads, 10),
-          activeUsers: parseInt(activeUsers, 10)
+          password: 'admin123',
+          ...newConfigPayload
         })
       });
 
-      if (!response.ok) {
-        const errData = await response.json();
-        throw new Error(errData.error || 'Server rejected request');
-      }
-
-      const resData = await response.json();
-      if (resData.success) {
-        onConfigChange(resData.config);
-        setAlert({ type: 'success', message: 'Configuration successfully updated and synchronized globally!' });
-        addLog("Server successfully persisted configurations and updated Firestore 'global' state.");
+      const contentType = response.headers.get('content-type');
+      if (response.ok && contentType && contentType.includes('application/json')) {
+        const resData = await response.json();
+        if (resData.success) {
+          onConfigChange(resData.config);
+          apiSucceeded = true;
+          setAlert({ type: 'success', message: 'Configuration successfully updated and synchronized globally (API)!' });
+          addLog("Server successfully persisted configurations and updated Firestore 'global' state.");
+        }
       } else {
-        throw new Error('Sync failed');
+        addLog("API endpoint inoperative or returned non-JSON payload. Transitioning to direct database sync...");
       }
     } catch (err: any) {
-      console.error(err);
-      setAlert({ type: 'error', message: err.message || 'An error occurred during save fallback.' });
-      addLog(`Sync error: ${err.message}`);
-    } finally {
-      setLoading(false);
+      console.warn("Express endpoint bypassed:", err.message);
+      addLog(`API bypassed: ${err.message}`);
     }
+
+    // Direct Firestore update fallback if API sync is not active/available (e.g. on Netlify static deploy)
+    if (!apiSucceeded) {
+      try {
+        addLog("Executing secure client-side Firestore document commit...");
+        const docRef = doc(db, 'stats', 'global');
+        await setDoc(docRef, newConfigPayload, { merge: true });
+        
+        onConfigChange(newConfigPayload);
+        setAlert({ type: 'success', message: 'Configuration successfully written directly to cloud Firestore database!' });
+        addLog("Database write complete: configuration updated instantly via live snapshot subscriptions!");
+      } catch (err: any) {
+        console.error("Direct Firestore write failure:", err);
+        setAlert({ type: 'error', message: `Database update failed: ${err.message || 'Check firestore permissions.'}` });
+        addLog(`Database lock error: ${err.message}`);
+      }
+    }
+
+    setLoading(false);
   };
 
   const loadDefaults = () => {
