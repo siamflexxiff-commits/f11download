@@ -1,0 +1,6 @@
+{
+  "name": "F11 Hotkey - FPS & Resolution Optimizer",
+  "description": "Optimize your gaming experience with custom hotkeys and resolution controls for MSI and BlueStacks.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

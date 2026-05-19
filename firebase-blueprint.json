@@ -1,0 +1,43 @@
+{
+  "entities": {
+    "Stats": {
+      "title": "Stats",
+      "description": "Global download and active user metrics",
+      "type": "object",
+      "properties": {
+        "downloads": {
+          "type": "integer",
+          "description": "Total number of downloads tracked"
+        },
+        "activeUsers": {
+          "type": "integer",
+          "description": "Estimated live active users calculated in real-time"
+        }
+      },
+      "required": ["downloads", "activeUsers"]
+    },
+    "Session": {
+      "title": "Session",
+      "description": "User online session heartbeats for real-time calculations",
+      "type": "object",
+      "properties": {
+        "lastSeen": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Last timestamp the user was seen active"
+        }
+      },
+      "required": ["lastSeen"]
+    }
+  },
+  "firestore": {
+    "stats/global": {
+      "schema": "Stats",
+      "description": "Global statistics document"
+    },
+    "sessions/{sessionId}": {
+      "schema": "Session",
+      "description": "Individual live session heartbeat doc"
+    }
+  }
+}

@@ -1,0 +1,10 @@
+{
+  "projectId": "f11-bug-website",
+  "appId": "1:88470450751:web:8771314f965db0220cfe8a",
+  "apiKey": "AIzaSyCkVKgnjcXsleKsY8hsY8fICgDAkJ4G3RU",
+  "authDomain": "f11-bug-website.firebaseapp.com",
+  "firestoreDatabaseId": "(default)",
+  "storageBucket": "f11-bug-website.firebasestorage.app",
+  "messagingSenderId": "88470450751",
+  "measurementId": "G-V8J6BVG7LG"
+}
