@@ -72,11 +72,16 @@ export default function App() {
   const fetchStats = useCallback(async () => {
     try {
       const response = await fetch('/api/stats');
-      const data = await response.json();
-      setSiteConfig(prev => ({
-        ...prev,
-        ...data
-      }));
+      const contentType = response.headers.get('content-type');
+      if (response.ok && contentType && contentType.includes('application/json')) {
+        const data = await response.json();
+        setSiteConfig(prev => ({
+          ...prev,
+          ...data
+        }));
+      } else {
+        console.log('Express stats API inoperative or returned non-JSON response (SPA static environment).');
+      }
     } catch (error) {
       console.error('Failed to fetch stats fallback:', error);
     }
