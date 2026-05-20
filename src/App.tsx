@@ -449,7 +449,7 @@ export default function App() {
                 </button>
                 <div className="flex flex-col justify-center">
                   <div className="flex items-center gap-2 px-4 text-sm text-slate-400 font-medium italic">
-                    *Completely Free & Open Source
+                    *Completely Free
                   </div>
                   <div className="px-4 text-[11px] font-bold text-slate-300 uppercase tracking-widest mt-1">
                     {siteConfig.downloads.toLocaleString()}+ Downloads
